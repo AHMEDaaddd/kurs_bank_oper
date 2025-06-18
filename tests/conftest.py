@@ -5,7 +5,7 @@ from io import StringIO
 import pandas as pd
 import pytest
 
-
+# Пример фикстуры для подстановки тестовых данных
 @pytest.fixture
 def sample_df() -> pd.DataFrame:
     """Возвращает пример DataFrame с транзакциями для тестов."""
