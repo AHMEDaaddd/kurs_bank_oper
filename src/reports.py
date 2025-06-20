@@ -1,34 +1,44 @@
 """Модуль генерации отчётов по транзакциям: по категориям, дням недели и типу дня."""
 
 import logging
+from datetime import datetime
 from typing import Optional
 
 import pandas as pd
+from pandas.tseries.offsets import DateOffset
 
+from src.utils.report_saver import save_report
 from src.utils.xlsx_reader import load_transactions
 
 logger = logging.getLogger(__name__)
 
 
-def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
+@save_report()  # или @save_report("my_filename.json") для именованного файла
+def spending_by_category(
+    transactions: pd.DataFrame | None = None, category: str | None = None, date: str | None = None
+) -> pd.DataFrame:
     """
-    Возвращает сумму трат по переданной категории.
+    Возвращает сумму трат по категориям за последние 3 месяца до указанной даты.
 
-    Если указана дата — фильтрует операции в рамках месяца до этой даты.
+    Если дата не передана, используется текущая.
     """
-    logger.info("Генерация отчета: траты по категории '%s'", category)
-
-    df = transactions.copy()
-    df = df[df["Сумма операции"] < 0]
-    df = df[df["Категория"] == category]
+    logger.info("Генерация отчета: траты по категориям (за последние 3 месяца)")
+    df = transactions if transactions is not None else load_transactions()
+    df = df[df["Сумма операции"] < 0].copy()
+    df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
 
     if date:
-        df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
         end_date = pd.to_datetime(date, dayfirst=True)
-        start_date = end_date.replace(day=1)
-        df = df[(df["Дата операции"] >= start_date) & (df["Дата операции"] <= end_date)]
+    else:
+        end_date = pd.Timestamp.now()
 
-    result = df.groupby("Категория")["Сумма операции"].sum().sort_values()
+    start_date = end_date - DateOffset(months=3)
+    df_filtered = df[(df["Дата операции"] >= start_date) & (df["Дата операции"] <= end_date)]
+
+    if category:
+        df_filtered = df_filtered[df_filtered["Категория"] == category]
+
+    result = df_filtered.groupby("Категория")["Сумма операции"].sum().sort_values()
     return result.to_frame(name="Сумма операции")
 
 
