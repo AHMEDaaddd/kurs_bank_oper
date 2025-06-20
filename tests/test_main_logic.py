@@ -20,5 +20,6 @@ def test_simple_search_integration() -> None:
 
 
 def test_spending_by_category_integration() -> None:
-    result = spending_by_category()
+    df = load_transactions()
+    result = spending_by_category(df, "Продукты")
     assert hasattr(result, "index")

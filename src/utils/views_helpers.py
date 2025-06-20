@@ -14,7 +14,7 @@ def get_greeting(date_time: str) -> str:
     """Возвращает приветствие в зависимости от времени суток."""
     hour = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S").hour
     if 5 <= hour < 12:
-        return "Доброе утро"
+        return "Доброе утро"  # Это вспомогательные функции для отображения
     elif 12 <= hour < 18:
         return "Добрый день"
     elif 18 <= hour < 23:

@@ -18,4 +18,5 @@ if __name__ == "__main__":
     print(simple_search("оплата", transactions))
 
     print("\nОтчёт (траты по категориям):")
-    print(spending_by_category())
+    df = load_transactions()  # уже есть вызов
+    print(spending_by_category(df, "Продукты"))
